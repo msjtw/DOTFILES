@@ -1,0 +1,4 @@
+image="$HOME/Pictures/wp_blur.png"
+ignore-empty-password
+show-failed-attempts
+show-keyboard-layout

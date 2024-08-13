@@ -1,0 +1,5 @@
+#!/bin/sh
+
+while read p; do
+    ln -s "$HOME/Documents/DOTFILES/$p" "$HOME/.config/$p"
+done < list

@@ -1,0 +1,131 @@
+{
+"layer": "top", // Waybar at top layer
+"position": "top", // Waybar at the bottom of your screen
+"height": 24, // Waybar height
+// "width": 1366, // Waybar width
+// Choose the order of the modules
+"modules-left": ["sway/workspaces", "sway/mode", "custom/spotify", "custom/weather"],
+"modules-center": ["clock"],
+"modules-right": ["backlight","pulseaudio", "network", "tray", "cpu", "memory", "temperature", "tray", "battery", "idle_inhibitor", "sway/language", "custom/shutdown"],
+"sway/workspaces": {
+    "format": "{name}",
+    "on-click": "activate",
+    "sort-by-number": true
+  },
+"sway/mode": {
+    "format": "<span style=\"italic\">{}</span>"
+},
+"tray": {
+    // "icon-size": 21,
+    "spacing": 10
+},
+"sway/language": {
+    "format": "{} 󰥻",
+    "on-click": "swaymsg input type:keyboard xkb_switch_layout next"
+},
+"temperature": {
+    // "thermal-zone": 2,
+    // "hwmon-path": "/sys/class/hwmon/hwmon2/temp1_input",
+    "critical-threshold": 80,
+    "format-critical": " | {temperatureC}°C 󰸁",
+    "format": " | {temperatureC}°C 󱃃"
+},
+"backlight": {
+    "device": "intel_backlight",
+    "format": "{percent}% {icon} ",
+    "format-icons": ["󰌶", "󱩒","󰛨"]
+},
+"clock": {
+    "interval": 1,
+    "tooltip": true,
+    "format": "{:%H:%M:%S | %d-%m-%Y}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "on-click": "gnome-calendar",
+    "calendar": {
+        "mode"          : "month",
+        "mode-mon-col"  : 3,
+        "weeks-pos"     : "right",
+        "format": {
+                  "months":     "<span color='#ffead3'><b>{}</b></span>",
+                  "days":       "<span color='#ecc6d9'><b>{}</b></span>",
+                  "weeks":      "<span color='#99ffdd'><b>W{}</b></span>",
+                  "weekdays":   "<span color='#ffcc66'><b>{}</b></span>",
+                  "today":      "<span color='#ff6699'><b><u>{}</u></b></span>"
+                  }
+        },
+        "actions":  {
+            "on-scroll-up": "shift_down",
+            "on-scroll-down": "shift_up"
+            }
+},
+"cpu": {
+    "format": "{usage}% "
+},
+"memory": {
+    "format": "| {percentage}% ",
+    "tooltip-format": "{used}GB - used\t{avail}GB - avail\n{swapUsed}GB - used\t{swapAvail}GB - avail"
+},
+"idle_inhibitor": {
+    "format": " {icon} | ",
+    "format-icons": {
+        "activated": "󰒳",
+        "deactivated": "󰒲"
+    }
+},
+"battery": {
+    "interval" : 5,
+    "bat": "BAT0",
+    "states": {
+        // "good": 95,
+        "warning": 20,
+        "critical": 15
+    },
+    "format": "{capacity}% {icon} |",
+    "format-charging": "{capacity}% - {power}W 󰂄|",
+    // "format-good": "", // An empty format will hide the module
+    // "format-full": "",
+    "tooltip-format": "{power}W \t {timeTo}",
+    "format-icons": ["󰂃", "󰁻", "󰁽", "󰁿", "󰂁", "󰁹"]
+},
+"network": {
+    // "interface": "wlp2s0", // (Optional) To force the use of this interface
+    "interval" : 1,
+    "format-wifi": "{bandwidthTotalBytes}  ||",
+    "format-ethernet": "{bandwidthTotalBytes} 󰌗",
+    "format-disconnected": "Disconnected ⚠",
+    "tooltip-format": "{essid} \n {ifname}: {ipaddr}/{cidr}"
+},
+"pulseaudio": {
+    //"scroll-step": 1,
+    "format": "| {volume}% {icon} |",
+    "format-bluetooth": "|󰂱{volume}% {icon} |",
+    "format-muted": "| 󰸈 |",
+    "format-icons": {
+        "headphones": "",
+        "handsfree": "",
+        "headset": "",
+        "phone": "",
+        "portable": "",
+        "car": "",
+        "default": ["", ""]
+    },
+    "on-click": "pavucontrol"
+},
+"custom/spotify": {
+    "format": " {}",
+    "max-length": 40,
+    "interval": 5, // Remove this if your script is endless and write in loop
+    "exec": "/home/msjtw/.config/waybar/mediaplayer.sh 2> /dev/null", // Script in resources folder
+    "exec-if": "pgrep spotify"
+},
+"custom/weather": {
+    "format": "| {}",
+    "interval": 300, // Remove this if your script is endless and write in loop
+    "exec": "python /home/msjtw/.config/waybar/weather.py 2> /dev/null", // Script in resources folder
+    "return-type" : "json"
+},
+"custom/shutdown":{
+    "format": " | ⏻",
+    "on-click": "systemctl poweroff"
+}
+}
