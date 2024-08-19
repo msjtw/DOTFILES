@@ -28,7 +28,8 @@ lon = city_data[0]["lon"]
 city_name = city_data[0]["name"]
 city_name += space(len(city_name), 15)
 
-api_key = "7acaae7aee25aa7e5a5cabd98eb57132"
+key_file = open("/home/msjtw/Documents/DOTFILES/key", "r")
+api_key = key_file.read().strip()
 r = requests.get(f'https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude=minutely&appid={api_key}&units=metric')
 data = json.loads(r.text)
 

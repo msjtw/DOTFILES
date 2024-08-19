@@ -215,7 +215,7 @@ end, { desc = '[B]uild and [D]ebug' })
 vim.keymap.set('n', '<leader>br', function()
   local directory = vim.fn.getcwd()
   vim.cmd('TermExec cmd="g++ % -o zz_exe/%:t:r" name="C++ run" dir='..directory)
-  vim.cmd('TermExec cmd="./zz_exe/%:t:r" go_back=0 dir='..directory)
+  vim.cmd('TermExec cmd="./zz_exe/%:t:r" go_back=0 start_in_insert=true dir='..directory)
   --if Is_file_open('out.out') then
   --  vim.cmd('bdelete out.out')
   --end
