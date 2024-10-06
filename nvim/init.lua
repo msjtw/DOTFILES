@@ -200,35 +200,12 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
---compile and run
-
-vim.keymap.set('n', '<leader>bd', function()
-  local directory = vim.fn.getcwd()
-  vim.cmd('TermExec cmd="g++ % -o zz_exe/%:t:r" name="C++ run" dir='..directory)
-  vim.cmd('TermExec cmd="./zz_exe/%:t:r < debug.in" dir='..directory)
-  --if Is_file_open('out.out') then
-  --  vim.cmd('bdelete out.out')
-  --end
-  --vim.cmd('20sp out.out')
-end, { desc = '[B]uild and [D]ebug' })
-
-vim.keymap.set('n', '<leader>br', function()
-  local directory = vim.fn.getcwd()
-  vim.cmd('TermExec cmd="g++ % -o zz_exe/%:t:r" name="C++ run" dir='..directory)
-  vim.cmd('TermExec cmd="./zz_exe/%:t:r" go_back=0 start_in_insert=true dir='..directory)
-  --if Is_file_open('out.out') then
-  --  vim.cmd('bdelete out.out')
-  --end
-  --vim.cmd('20sp out.out')
-end, { desc = '[B]uild and [R]un' })
-
-
 -- autoclose
 vim.keymap.set('i', '{', '{}<Esc>i')
 vim.keymap.set('i', '[', '[]<Esc>i')
 vim.keymap.set('i', '(', '()<Esc>i')
-vim.keymap.set('i', '\'', '\'\'<Esc>i')
-vim.keymap.set('i', '\"', '\"\"<Esc>i')
+vim.keymap.set('i', "'", "''<Esc>i")
+vim.keymap.set('i', '"', '""<Esc>i')
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -244,6 +221,59 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- LANGUAGE SPECIFIC KEYMAPS
+
+-- CPP
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'cpp',
+  group = vim.api.nvim_create_augroup('cpp-only-keymap', { clear = true }),
+  callback = function()
+    vim.keymap.set('n', '<leader>bd', function()
+      local directory = vim.fn.getcwd()
+      vim.cmd('TermExec cmd="g++ % -o zz_exe/%:t:r" name="C++ run" dir=' .. directory)
+      vim.cmd('TermExec cmd="./zz_exe/%:t:r < debug.in" dir=' .. directory)
+      --if Is_file_open('out.out') then
+      --  vim.cmd('bdelete out.out')
+      --end
+      --vim.cmd('20sp out.out')
+    end, { desc = '[B]uild and [D]ebug' })
+
+    vim.keymap.set('n', '<leader>br', function()
+      local directory = vim.fn.getcwd()
+      vim.cmd('TermExec cmd="g++ % -o zz_exe/%:t:r" name="C++ run" dir=' .. directory)
+      vim.cmd('TermExec cmd="./zz_exe/%:t:r" go_back=0 start_in_insert=true dir=' .. directory)
+      --if Is_file_open('out.out') then
+      --  vim.cmd('bdelete out.out')
+      --end
+      --vim.cmd('20sp out.out')
+    end, { desc = '[B]uild and [R]un' })
+  end,
+})
+
+-- LATEX
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'tex',
+  group = vim.api.nvim_create_augroup('tex_only_keymap', { clear = true }),
+  callback = function()
+    vim.keymap.set('n', '<leader>bo', function()
+      vim.cmd ':w'
+      vim.cmd "silent !bash -c '{ pdflatex -output-directory %:p:h % >/dev/null; mupdf %:r.pdf ; } &'"
+    end, { desc = '[B]uild and [O]pen' })
+
+    vim.keymap.set('n', '<leader>br', function()
+      vim.cmd ':w'
+      vim.cmd "silent !bash -c '{ pdflatex -output-directory %:p:h % >/dev/null; pkill -HUP mupdf ; } &'"
+    end, { desc = '[B]uild and [R]efresh' })
+  end,
+})
+
+vim.api.nvim_create_autocmd('InsertLeave', {
+  pattern = { '*tex' },
+  callback = function()
+    vim.cmd ':w'
+    vim.cmd "silent !bash -c ' pdflatex -output-directory %:p:h % >/dev/null ; pkill -HUP mupdf ; '"
+  end,
+})
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -414,10 +444,11 @@ require('lazy').setup({
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>f', function()
-        builtin.find_files({
+      vim.keymap.set('n', '<leader>sf', function()
+        builtin.find_files {
           no_ignore = true,
-          file_ignore_patterns = { "zz_exe/*" }       })
+          file_ignore_patterns = { 'zz_exe/*' },
+        }
       end, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
@@ -580,7 +611,7 @@ require('lazy').setup({
             })
           end
 
-          -- The following autocommand is used to enable inlay hints in your
+          -- The following au/tocommand is used to enable inlay hints in your
           -- code, if the language server you are using supports them
           --
           -- This may be unwanted, since they displace some of your code
@@ -608,8 +639,10 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+
       local servers = {
         clangd = {},
+        texlab = {},
         -- gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
@@ -669,42 +702,42 @@ require('lazy').setup({
     end,
   },
 
-  -- { -- Autoformat
-  --   'stevearc/conform.nvim',
-  --   lazy = false,
-  --   keys = {
-  --     {
-  --       '<leader>f',
-  --       function()
-  --         require('conform').format { async = true, lsp_fallback = true }
-  --       end,
-  --       mode = '',
-  --       desc = '[F]ormat buffer',
-  --     },
-  --   },
-  --   opts = {
-  --     notify_on_error = false,
-  --     format_on_save = function(bufnr)
-  --       -- Disable "format_on_save lsp_fallback" for languages that don't
-  --       -- have a well standardized coding style. You can add additional
-  --       -- languages here or re-enable it for the disabled ones.
-  --       local disable_filetypes = { c = true, cpp = true }
-  --       return {
-  --         timeout_ms = 500,
-  --         lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
-  --       }
-  --     end,
-  --     formatters_by_ft = {
-  --       lua = { 'stylua' },
-  --       -- Conform can also run multiple formatters sequentially
-  --       -- python = { "isort", "black" },
-  --       --
-  --       -- You can use a sub-list to tell conform to run *until* a formatter
-  --       -- is found.
-  --       -- javascript = { { "prettierd", "prettier" } },
-  --     },
-  --   },
-  -- },
+  { -- Autoformat
+    'stevearc/conform.nvim',
+    lazy = false,
+    keys = {
+      {
+        '<leader>ff',
+        function()
+          require('conform').format { async = true, lsp_fallback = true }
+        end,
+        mode = '',
+        desc = '[F]ormat buffer',
+      },
+    },
+    opts = {
+      notify_on_error = false,
+      format_on_save = function(bufnr)
+        -- Disable "format_on_save lsp_fallback" for languages that don't
+        -- have a well standardized coding style. You can add additional
+        -- languages here or re-enable it for the disabled ones.
+        local disable_filetypes = { c = true, cpp = true }
+        return {
+          timeout_ms = 500,
+          lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
+        }
+      end,
+      formatters_by_ft = {
+        lua = { 'stylua' },
+        -- Conform can also run multiple formatters sequentially
+        -- python = { "isort", "black" },
+        --
+        -- You can use a sub-list to tell conform to run *until* a formatter
+        -- is found.
+        -- javascript = { { "prettierd", "prettier" } },
+      },
+    },
+  },
 
   { -- Autocompletion
     'hrsh7th/nvim-cmp',
@@ -726,12 +759,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
       },
       'saadparwaiz1/cmp_luasnip',
@@ -747,7 +780,6 @@ require('lazy').setup({
       local cmp = require 'cmp'
       local luasnip = require 'luasnip'
       luasnip.config.setup {}
-
       cmp.setup {
         snippet = {
           expand = function(args)
@@ -879,7 +911,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'latex' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -887,7 +919,7 @@ require('lazy').setup({
         -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
         --  If you are experiencing weird indenting issues, add the language to
         --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-        additional_vim_regex_highlighting = { 'ruby' },
+        additional_vim_regex_highlighting = { 'ruby', 'latex' },
       },
       indent = { enable = true, disable = { 'ruby' } },
     },
@@ -912,30 +944,29 @@ require('lazy').setup({
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
 
-
   {
-    "nvim-tree/nvim-tree.lua",
-    version = "*",
+    'nvim-tree/nvim-tree.lua',
+    version = '*',
     lazy = false,
     dependencies = {
-      "nvim-tree/nvim-web-devicons",
+      'nvim-tree/nvim-web-devicons',
     },
     config = function()
-      require("nvim-tree").setup({
+      require('nvim-tree').setup {
         filters = {
           git_ignored = false,
         },
-      })
-    local tree_api = require("nvim-tree.api")
-    tree_api.tree.toggle()
-    vim.keymap.set('n', '<leader>n', tree_api.tree.toggle, { desc = 'Toggle NvimTree' })
+      }
+      local tree_api = require 'nvim-tree.api'
+      tree_api.tree.toggle()
+      vim.keymap.set('n', '<leader>n', tree_api.tree.toggle, { desc = 'Toggle NvimTree' })
     end,
   },
 
   {
-    "Pocco81/auto-save.nvim",
+    'Pocco81/auto-save.nvim',
     config = function()
-      require("auto-save").setup {
+      require('auto-save').setup {
         -- your config goes here
         -- or just leave it empty :)
       }
@@ -944,17 +975,31 @@ require('lazy').setup({
 
   {
     'akinsho/toggleterm.nvim',
-    version = "*",
+    version = '*',
     config = function()
-      require("toggleterm").setup{
+      require('toggleterm').setup {
         -- config
       }
     end,
   },
   {
-    'tpope/vim-commentary'
-  }
-
+    'tpope/vim-commentary',
+  },
+  {
+    'dart-lang/dart-vim-plugin',
+  },
+  {
+    'thosakwe/vim-flutter',
+  },
+  {
+    'lervag/vimtex',
+    lazy = false, -- we don't want to lazy load VimTeX
+    -- tag = "v2.15", -- uncomment to pin to a specific release
+    init = function()
+      -- VimTeX configuration goes here, e.g.
+      vim.g.vimtex_view_method = 'zathura'
+    end,
+  },
   -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins for Kickstart
   --
   --  Here are some example plugins that I've included in the Kickstart repository.
