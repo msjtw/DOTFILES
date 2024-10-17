@@ -42,6 +42,7 @@ return {
       ensure_installed = {
         -- Update this to ensure that you have the debuggers for the langs you want
         'delve',
+        'codelldb',
       },
     }
 
@@ -90,6 +91,29 @@ return {
         -- On Windows delve must be run attached or it crashes.
         -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
         detached = vim.fn.has 'win32' == 0,
+      },
+    }
+    dap.configurations.cpp = {
+      {
+        name = 'g++: debug',
+        type = 'codelldb',
+        request = 'launch',
+        program = function()
+          local directory = vim.fn.getcwd()
+          local exepath = directory .. '/zz_exe/' .. vim.fn.expand '%:t:r'
+          return exepath
+        end,
+        preRunCommands = function()
+          local directory = vim.fn.getcwd()
+          vim.cmd 'silent !g++ -g % -o zz_exe/%:t:r'
+          vim.cmd ':ToggleTermToggleAll!'
+          vim.cmd ':NvimTreeClose'
+        end,
+        -- exitCommands = function()
+        --   vim.cmd ':NvimTreeOpen'
+        -- end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = true,
       },
     }
   end,

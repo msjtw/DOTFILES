@@ -164,6 +164,30 @@ vim.opt.shiftwidth = 4
 vim.opt.softtabstop = 4
 vim.opt.expandtab = true
 
+vim.opt.spelllang = { 'pl', 'en_gb' }
+vim.opt.spell = false
+
+-- toggle spell
+vim.keymap.set('n', '<leader>ts', function()
+  vim.opt.spell = not (vim.opt.spell:get())
+end, { desc = '[T]oggle [S]pell' })
+
+vim.opt.autoread = true;
+-- Triger `autoread` when files changes on disk
+-- https://unix.stackexchange.com/questions/149209/refresh-changed-content-of-file-opened-in-vim/383044#383044
+-- https://vi.stackexchange.com/questions/13692/prevent-focusgained-autocmd-running-in-command-line-editing-mode
+vim.api.nvim_create_autocmd({'FocusGained', 'BufEnter', 'CursorHold', 'CursorHoldI'}, {
+  pattern = '*',
+  command = "if mode() !~ '\v(c|r.?|!|t)' && getcmdwintype() == '' | checktime | endif",
+})
+
+-- Notification after file change
+-- https://vi.stackexchange.com/questions/13091/autocmd-event-for-autoread
+vim.api.nvim_create_autocmd({'FileChangedShellPost'}, {
+  pattern = '*',
+  command = "echohl WarningMsg | echo 'File changed on disk. Buffer reloaded.' | echohl None",
+})
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -201,11 +225,11 @@ vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower win
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- autoclose
-vim.keymap.set('i', '{', '{}<Esc>i')
-vim.keymap.set('i', '[', '[]<Esc>i')
-vim.keymap.set('i', '(', '()<Esc>i')
-vim.keymap.set('i', "'", "''<Esc>i")
-vim.keymap.set('i', '"', '""<Esc>i')
+-- vim.keymap.set('i', '{', '{}<Esc>i')
+-- vim.keymap.set('i', '[', '[]<Esc>i')
+-- vim.keymap.set('i', '(', '()<Esc>i')
+-- vim.keymap.set('i', "'", "''<Esc>i")
+-- vim.keymap.set('i', '"', '""<Esc>i')
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -225,7 +249,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 
 -- CPP
 vim.api.nvim_create_autocmd('FileType', {
-  pattern = 'cpp',
+  pattern = { 'cpp', 'c' },
   group = vim.api.nvim_create_augroup('cpp-only-keymap', { clear = true }),
   callback = function()
     vim.keymap.set('n', '<leader>bd', function()
@@ -247,6 +271,15 @@ vim.api.nvim_create_autocmd('FileType', {
       --end
       --vim.cmd('20sp out.out')
     end, { desc = '[B]uild and [R]un' })
+
+    vim.keymap.set('n', '<leader>bc', function()
+      local directory = vim.fn.getcwd()
+      vim.cmd('TermExec cmd="g++ % -o zz_exe/%:t:r" name="C++ run" dir=' .. directory)
+      --if Is_file_open('out.out') then
+      --  vim.cmd('bdelete out.out')
+      --end
+      --vim.cmd('20sp out.out')
+    end, { desc = '[B]uild and [C]ompile' })
   end,
 })
 
@@ -255,14 +288,14 @@ vim.api.nvim_create_autocmd('FileType', {
   pattern = 'tex',
   group = vim.api.nvim_create_augroup('tex_only_keymap', { clear = true }),
   callback = function()
-    vim.keymap.set('n', '<leader>bo', function()
+    vim.keymap.set('n', '<C-o>', function()
       vim.cmd ':w'
-      vim.cmd "silent !bash -c '{ pdflatex -output-directory %:p:h % >/dev/null; mupdf %:r.pdf ; } &'"
+      vim.cmd "silent !bash -c '{ pdflatex -output-directory %:p:h %:p >/dev/null; mupdf %:r.pdf ; } &'"
     end, { desc = '[B]uild and [O]pen' })
 
-    vim.keymap.set('n', '<leader>br', function()
+    vim.keymap.set('n', '<leader>lr', function()
       vim.cmd ':w'
-      vim.cmd "silent !bash -c '{ pdflatex -output-directory %:p:h % >/dev/null; pkill -HUP mupdf ; } &'"
+      vim.cmd "silent !bash -c '{ pdflatex -output-directory %:p:h %:p >/dev/null; pkill -HUP mupdf ; } &'"
     end, { desc = '[B]uild and [R]efresh' })
   end,
 })
@@ -271,7 +304,13 @@ vim.api.nvim_create_autocmd('InsertLeave', {
   pattern = { '*tex' },
   callback = function()
     vim.cmd ':w'
-    vim.cmd "silent !bash -c ' pdflatex -output-directory %:p:h % >/dev/null ; pkill -HUP mupdf ; '"
+    vim.cmd "silent !bash -c ' pdflatex -output-directory %:p:h %:p >/dev/null ; pkill -HUP mupdf ; '"
+  end,
+})
+
+vim.api.nvim_create_autocmd('InsertLeave', {
+  callback = function()
+    vim.cmd ':w'
   end,
 })
 
@@ -729,6 +768,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        latex = { 'latexindent' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -962,17 +1002,6 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>n', tree_api.tree.toggle, { desc = 'Toggle NvimTree' })
     end,
   },
-
-  {
-    'Pocco81/auto-save.nvim',
-    config = function()
-      require('auto-save').setup {
-        -- your config goes here
-        -- or just leave it empty :)
-      }
-    end,
-  },
-
   {
     'akinsho/toggleterm.nvim',
     version = '*',
@@ -997,7 +1026,7 @@ require('lazy').setup({
     -- tag = "v2.15", -- uncomment to pin to a specific release
     init = function()
       -- VimTeX configuration goes here, e.g.
-      vim.g.vimtex_view_method = 'zathura'
+      vim.g.vimtex_view_method = 'mupdf'
     end,
   },
   -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins for Kickstart
@@ -1005,10 +1034,10 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
