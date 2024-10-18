@@ -172,18 +172,18 @@ vim.keymap.set('n', '<leader>ts', function()
   vim.opt.spell = not (vim.opt.spell:get())
 end, { desc = '[T]oggle [S]pell' })
 
-vim.opt.autoread = true;
+vim.opt.autoread = true
 -- Triger `autoread` when files changes on disk
 -- https://unix.stackexchange.com/questions/149209/refresh-changed-content-of-file-opened-in-vim/383044#383044
 -- https://vi.stackexchange.com/questions/13692/prevent-focusgained-autocmd-running-in-command-line-editing-mode
-vim.api.nvim_create_autocmd({'FocusGained', 'BufEnter', 'CursorHold', 'CursorHoldI'}, {
+vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold', 'CursorHoldI' }, {
   pattern = '*',
   command = "if mode() !~ '\v(c|r.?|!|t)' && getcmdwintype() == '' | checktime | endif",
 })
 
 -- Notification after file change
 -- https://vi.stackexchange.com/questions/13091/autocmd-event-for-autoread
-vim.api.nvim_create_autocmd({'FileChangedShellPost'}, {
+vim.api.nvim_create_autocmd({ 'FileChangedShellPost' }, {
   pattern = '*',
   command = "echohl WarningMsg | echo 'File changed on disk. Buffer reloaded.' | echohl None",
 })
@@ -265,7 +265,7 @@ vim.api.nvim_create_autocmd('FileType', {
     vim.keymap.set('n', '<leader>br', function()
       local directory = vim.fn.getcwd()
       vim.cmd('TermExec cmd="g++ % -o zz_exe/%:t:r" name="C++ run" dir=' .. directory)
-      vim.cmd('TermExec cmd="./zz_exe/%:t:r" go_back=0 start_in_insert=true dir=' .. directory)
+      vim.cmd('TermExec cmd="./zz_exe/%:t:r" go_back=0 start_in_insert=1 dir=' .. directory)
       --if Is_file_open('out.out') then
       --  vim.cmd('bdelete out.out')
       --end
@@ -274,7 +274,7 @@ vim.api.nvim_create_autocmd('FileType', {
 
     vim.keymap.set('n', '<leader>bc', function()
       local directory = vim.fn.getcwd()
-      vim.cmd('TermExec cmd="g++ % -o zz_exe/%:t:r" name="C++ run" dir=' .. directory)
+      vim.cmd('TermExec cmd="g++ % -o zz_exe/%:t:r" name="C++ run" go_back=0 start_in_insert=1 dir=' .. directory)
       --if Is_file_open('out.out') then
       --  vim.cmd('bdelete out.out')
       --end
@@ -305,12 +305,6 @@ vim.api.nvim_create_autocmd('InsertLeave', {
   callback = function()
     vim.cmd ':w'
     vim.cmd "silent !bash -c ' pdflatex -output-directory %:p:h %:p >/dev/null ; pkill -HUP mupdf ; '"
-  end,
-})
-
-vim.api.nvim_create_autocmd('InsertLeave', {
-  callback = function()
-    vim.cmd ':w'
   end,
 })
 
@@ -1008,6 +1002,43 @@ require('lazy').setup({
     config = function()
       require('toggleterm').setup {
         -- config
+      }
+    end,
+  },
+  {
+    'pocco81/auto-save.nvim',
+    config = function()
+      require('auto-save').setup {
+        enabled = true, -- start auto-save when the plugin is loaded (i.e. when your package manager loads it)
+        execution_message = {
+          message = function() -- message to print on save
+            return ('AutoSave: saved at ' .. vim.fn.strftime '%H:%M:%S')
+          end,
+          dim = 0.18, -- dim the color of `message`
+          cleaning_interval = 1250, -- (milliseconds) automatically clean MsgArea after displaying `message`. See :h MsgArea
+        },
+        trigger_events = { 'InsertLeave', 'TextChanged' }, -- vim events that trigger auto-save. See :h events
+        -- function that determines whether to save the current buffer or not
+        -- return true: if buffer is ok to be saved
+        -- return false: if it's not ok to be saved
+        condition = function(buf)
+          local fn = vim.fn
+          local utils = require 'auto-save.utils.data'
+
+          if fn.getbufvar(buf, '&modifiable') == 1 and utils.not_in(fn.getbufvar(buf, '&filetype'), {}) then
+            return true -- met condition(s), can save
+          end
+          return false -- can't save
+        end,
+        write_all_buffers = false, -- write all buffers when the current one meets `condition`
+        debounce_delay = 135, -- saves the file at most every `debounce_delay` milliseconds
+        callbacks = { -- functions to be executed at different intervals
+          enabling = nil, -- ran when enabling auto-save
+          disabling = nil, -- ran when disabling auto-save
+          before_asserting_save = nil, -- ran before checking `condition`
+          before_saving = nil, -- ran before doing the actual save
+          after_saving = nil, -- ran after doing the actual save
+        },
       }
     end,
   },

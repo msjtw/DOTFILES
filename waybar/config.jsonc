@@ -6,7 +6,7 @@
 // Choose the order of the modules
 "modules-left": ["sway/workspaces", "sway/mode", "custom/spotify", "custom/weather"],
 "modules-center": ["clock"],
-"modules-right": ["backlight","pulseaudio", "network", "tray", "cpu", "memory", "temperature", "tray", "battery", "idle_inhibitor", "sway/language", "custom/shutdown"],
+"modules-right": ["backlight","pulseaudio", "network","custom/tailscale", "tray", "cpu", "memory", "temperature", "tray", "battery", "idle_inhibitor", "sway/language", "custom/shutdown"],
 "sway/workspaces": {
     "format": "{name}",
     "on-click": "activate",
@@ -90,7 +90,7 @@
 "network": {
     // "interface": "wlp2s0", // (Optional) To force the use of this interface
     "interval" : 1,
-    "format-wifi": "{bandwidthTotalBytes}  ||",
+    "format-wifi": "{bandwidthTotalBytes} ",
     "format-ethernet": "{bandwidthTotalBytes} 󰌗",
     "format-disconnected": "Disconnected ⚠",
     "tooltip-format": "{essid} \n {ifname}: {ipaddr}/{cidr}"
@@ -117,6 +117,11 @@
     "interval": 5, // Remove this if your script is endless and write in loop
     "exec": "/home/msjtw/.config/waybar/mediaplayer.sh 2> /dev/null", // Script in resources folder
     "exec-if": "pgrep spotify"
+},
+"custom/tailscale": {
+    "format": " {} ||", 
+    "interval": 10,
+    "exec": "/home/msjtw/.config/waybar/tailscale.sh",
 },
 "custom/weather": {
     "format": "| {}",
