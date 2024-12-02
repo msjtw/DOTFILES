@@ -18,7 +18,6 @@ set $term foot
 # Your preferred application launcher
 # Note: pass the final command to swaymsg so that the resulting window can be opened
 # on the original workspace that the command was run on.
-set $menu wofi --show
 
 ### Output configuration
 #
@@ -234,9 +233,11 @@ bar {
     workspace_buttons yes
 }
 
-output DP-4 pos 0,0
-output DP-5 pos 1920,0
-output eDP-1 pos 4480,0
+output DP-4 pos 0 185 res 1920x1080
+output DP-5 pos 1920 0 res 3840x2160
+output eDP-1 pos 4480 400 res 1920x1080
+
+# output eDP-1 pos 0 0 res 1920x1080
 
 workspace 3 output DP-4
 workspace 2 output DP-5
@@ -288,6 +289,15 @@ exec_always swayidle -w \
 
 bindsym $mod+Alt+Space exec "swaymsg input type:keyboard xkb_switch_layout next"
 
+# Allow switching between workspaces with left and right swipes
+bindgesture swipe:right workspace prev
+bindgesture swipe:left workspace next
+# Allow container movements by pinching them
+# bindgesture pinch:inward+up move up
+# bindgesture pinch:inward+down move down
+# bindgesture pinch:inward+left move left
+# bindgesture pinch:inward+right move right
+#
 # capture the specified screen area to clipboard    
 set $screenshot grim -g "$(slurp)" - | wl-copy
 bindsym $mod+Print exec $screenshot

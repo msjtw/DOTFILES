@@ -172,6 +172,10 @@ vim.keymap.set('n', '<leader>ts', function()
   vim.opt.spell = not (vim.opt.spell:get())
 end, { desc = '[T]oggle [S]pell' })
 
+vim.keymap.set('n', '<leader>tt', function()
+  vim.cmd 'ToggleTerm'
+end, { desc = '[T]oggle [T]oggleterm' })
+
 vim.opt.autoread = true
 -- Triger `autoread` when files changes on disk
 -- https://unix.stackexchange.com/questions/149209/refresh-changed-content-of-file-opened-in-vim/383044#383044
@@ -260,7 +264,7 @@ vim.api.nvim_create_autocmd('FileType', {
       --  vim.cmd('bdelete out.out')
       --end
       --vim.cmd('20sp out.out')
-    end, { desc = '[B]uild and [D]ebug' })
+    end, { buffer = 0, desc = '[B]uild and [D]ebug' })
 
     vim.keymap.set('n', '<leader>br', function()
       local directory = vim.fn.getcwd()
@@ -270,7 +274,7 @@ vim.api.nvim_create_autocmd('FileType', {
       --  vim.cmd('bdelete out.out')
       --end
       --vim.cmd('20sp out.out')
-    end, { desc = '[B]uild and [R]un' })
+    end, { buffer = 0, desc = '[B]uild and [R]un' })
 
     vim.keymap.set('n', '<leader>bc', function()
       local directory = vim.fn.getcwd()
@@ -279,7 +283,16 @@ vim.api.nvim_create_autocmd('FileType', {
       --  vim.cmd('bdelete out.out')
       --end
       --vim.cmd('20sp out.out')
-    end, { desc = '[B]uild and [C]ompile' })
+    end, { buffer = 0, desc = '[B]uild and [C]ompile' })
+
+    -- vim.api.nvim_create_autocmd('BufLeave', {
+    --   buffer = 0, -- Restrict to the current buffer
+    --   callback = function()
+    --     vim.api.nvim_buf_del_keymap(0, 'n', '<leader>br')
+    --     vim.api.nvim_buf_del_keymap(0, 'n', '<leader>bc')
+    --     vim.api.nvim_buf_del_keymap(0, 'n', '<leader>bd')
+    --   end,
+    -- })
   end,
 })
 
@@ -288,15 +301,23 @@ vim.api.nvim_create_autocmd('FileType', {
   pattern = 'tex',
   group = vim.api.nvim_create_augroup('tex_only_keymap', { clear = true }),
   callback = function()
-    vim.keymap.set('n', '<C-o>', function()
+    vim.keymap.set('n', '<leader>bo', function()
       vim.cmd ':w'
       vim.cmd "silent !bash -c '{ pdflatex -output-directory %:p:h %:p >/dev/null; mupdf %:r.pdf ; } &'"
-    end, { desc = '[B]uild and [O]pen' })
+    end, { buffer = 0, desc = '[B]uild and [O]pen' })
 
-    vim.keymap.set('n', '<leader>lr', function()
+    vim.keymap.set('n', '<leader>br', function()
       vim.cmd ':w'
       vim.cmd "silent !bash -c '{ pdflatex -output-directory %:p:h %:p >/dev/null; pkill -HUP mupdf ; } &'"
-    end, { desc = '[B]uild and [R]efresh' })
+    end, { buffer = 0, desc = '[B]uild and [R]efresh' })
+
+    vim.api.nvim_create_autocmd('BufLeave', {
+      buffer = 0, -- Restrict to the current buffer
+      callback = function()
+        vim.api.nvim_buf_del_keymap(0, 'n', '<leader>br')
+        vim.api.nvim_buf_del_keymap(0, 'n', '<leader>bo')
+      end,
+    })
   end,
 })
 
@@ -307,6 +328,19 @@ vim.api.nvim_create_autocmd('InsertLeave', {
     vim.cmd "silent !bash -c ' pdflatex -output-directory %:p:h %:p >/dev/null ; pkill -HUP mupdf ; '"
   end,
 })
+
+-- VERILOG
+
+-- vim.api.nvim_create_autocmd('FileType', {
+--   -- This handler will fire when the buffer's 'filetype' is "python"
+--   pattern = { 'verilog', 'systemverilog' },
+--   callback = function()
+--     vim.lsp.start {
+--       name = 'verible',
+--       cmd = { 'verible-verilog-ls', '--rules_config_search' },
+--     }
+--   end,
+-- })
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -676,9 +710,10 @@ require('lazy').setup({
       local servers = {
         clangd = {},
         texlab = {},
+        verible = {},
         -- gopls = {},
         -- pyright = {},
-        -- rust_analyzer = {},
+        rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -719,6 +754,16 @@ require('lazy').setup({
         'stylua', -- Used to format Lua code
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+
+      local lspconfutil = require 'lspconfig/util'
+      local root_pattern = lspconfutil.root_pattern('veridian.yml', '.git')
+      require('lspconfig').veridian.setup {
+        cmd = { 'veridian' },
+        root_dir = function(fname)
+          local filename = lspconfutil.path.is_absolute(fname) and fname or lspconfutil.path.join(vim.loop.cwd(), fname)
+          return root_pattern(filename) or vim.fs.dirname(filename)
+        end,
+      }
 
       require('mason-lspconfig').setup {
         handlers = {
@@ -945,7 +990,7 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'latex' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'latex', 'verilog', 'rust' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -1065,9 +1110,9 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  require 'kickstart.plugins.debug',
+  -- require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
