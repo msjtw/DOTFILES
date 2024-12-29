@@ -93,28 +93,5 @@ return {
         detached = vim.fn.has 'win32' == 0,
       },
     }
-    dap.configurations.cpp = {
-      {
-        name = 'g++: debug',
-        type = 'codelldb',
-        request = 'launch',
-        program = function()
-          local directory = vim.fn.getcwd()
-          local exepath = directory .. '/zz_exe/' .. vim.fn.expand '%:t:r'
-          return exepath
-        end,
-        preRunCommands = function()
-          local directory = vim.fn.getcwd()
-          vim.cmd 'silent !g++ -g % -o zz_exe/%:t:r'
-          vim.cmd ':ToggleTermToggleAll!'
-          vim.cmd ':NvimTreeClose'
-        end,
-        -- exitCommands = function()
-        --   vim.cmd ':NvimTreeOpen'
-        -- end,
-        cwd = '${workspaceFolder}',
-        stopOnEntry = true,
-      },
-    }
   end,
 }
