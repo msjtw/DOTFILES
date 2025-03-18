@@ -1,0 +1,7 @@
+#!/bin/sh
+
+city=$1
+key=$(</home/msjtw/Documents/DOTFILES/key)
+
+curl -sq "http://api.openweathermap.org/geo/1.0/direct?q=$city&limit=1&appid=$key" | jq > ~/.config/waybar/city.json
+killall -SIGUSR2 waybar
