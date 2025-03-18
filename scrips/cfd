@@ -1,0 +1,61 @@
+#!/bin/bash
+
+declare downloadDir="$HOME/Downloads"
+declare k=1
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        k)
+            if [[ $2 != "" ]]; then
+                k=$2
+                shift 2
+            else
+                echo "You have to specify number of files you want to copy"
+                exit 1
+            fi
+            ;;
+        d)
+            if [[ $2 != "" ]]; then
+                downloadDir=$2
+                shift 2
+            else
+                echo "You have to specify number of files you want to copy"
+                exit 1
+            fi
+            ;;
+        h)
+            echo "Usage: cfd [OPTION]..."
+            echo ""
+            echo "Mandatory arguments for short options:"
+            echo "  -k=K"
+            echo "    copy K files from download directory"
+            echo "  -d=DIR"
+            echo "    set path to download directory to DIR"
+            exit 0
+            ;;
+        *)
+       if [[ $1 =~ ^[0-9]+$ ]]; then
+           k=$1
+                shift 1
+       else
+                echo "Wrong flag!"
+                exit 1
+       fi
+            ;;
+    esac
+done
+
+files=$(ls -lQ --time-style=long-iso $downloadDir | sort -k 6 | tail -n $k | grep -o '".*"')
+
+file=""
+for sub_file in $files; do
+    file="$file $sub_file"
+    match='".*"'
+    if [[ $file =~ $match ]]; then
+        file=${file#" \""}
+        file=${file%"\""}
+        echo "copying" $file...
+        cp "$downloadDir/$file" .
+        file=""
+    fi
+done

@@ -258,6 +258,8 @@ bindsym Shift+End exec "playerctl play-pause"
 bindsym Shift+Prior exec "playerctl next"
 bindsym Shift+Next exec "playerctl previous"
 
+bindsym $mod+Shift+a exec "nvim_launch.py"
+
 
 set $cl_high #4d0824
 set $cl_indi #d9d8d8

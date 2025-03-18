@@ -1,0 +1,3 @@
+~/Documents/cpp
+~/Documents/uni
+~/Documents/digital_design

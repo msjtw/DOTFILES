@@ -1,0 +1,12 @@
+#!/bin/bash
+
+sha=$(sha256sum $1 | tr -s [ ] | cut -d ' ' -f 1)
+
+echo $sha
+
+if [[ "$2" == "$sha" ]] ; then
+  echo -e "\033[0;32mPASSED\033[0m"
+else
+  echo -e "\033[0;31mFAILED\033[0m"
+fi
+ 

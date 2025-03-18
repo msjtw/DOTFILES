@@ -1,9 +1,15 @@
 [
   {
-    "name": "Komorniki",
-    "lat": 51.530574,
-    "lon": 16.1448619,
+    "name": "Poznań",
+    "local_names": {
+      "lv": "Poznaņa",
+      "pl": "Poznań",
+      "ar": "بوزنان",
+      "de": "Posen"
+    },
+    "lat": 52.4006632,
+    "lon": 16.91973259178088,
     "country": "PL",
-    "state": "Lower Silesian Voivodeship"
+    "state": "Greater Poland Voivodeship"
   }
 ]

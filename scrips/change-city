@@ -1,0 +1,6 @@
+#!/bin/sh
+
+city=$1
+
+curl -sq "http://api.openweathermap.org/geo/1.0/direct?q=$city&limit=1&appid=5373bdfa0929935d883166bea5ea2a68" | jq > ~/.config/waybar/city.json
+killall -SIGUSR2 waybar
