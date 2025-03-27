@@ -176,6 +176,12 @@ vim.keymap.set('n', '<leader>tt', function()
   vim.cmd 'ToggleTerm'
 end, { desc = '[T]oggle [T]oggleterm' })
 
+-- disable arrow keys in normal mode
+vim.keymap.set('n', '<Up>', '<Nop>')
+vim.keymap.set('n', '<Left>', '<Nop>')
+vim.keymap.set('n', '<Right>', '<Nop>')
+vim.keymap.set('n', '<Down>', '<Nop>')
+
 vim.opt.autoread = true
 -- Triger `autoread` when files changes on disk
 -- https://unix.stackexchange.com/questions/149209/refresh-changed-content-of-file-opened-in-vim/383044#383044
@@ -1031,7 +1037,27 @@ require('lazy').setup({
         },
       }
       local tree_api = require 'nvim-tree.api'
-      tree_api.tree.toggle()
+      local function open_nvim_tree(data)
+        -- buffer is a directory
+        local directory = vim.fn.isdirectory(data.file) == 1
+
+        if not directory then
+          return
+        end
+
+        -- create a new, empty buffer
+        vim.cmd.enew()
+
+        -- wipe the directory buffer
+        vim.cmd.bw(data.buf)
+
+        -- change to the directory
+        vim.cmd.cd(data.file)
+
+        -- open the tree
+        require('nvim-tree.api').tree.open()
+      end
+      vim.api.nvim_create_autocmd({ 'VimEnter' }, { callback = open_nvim_tree })
       vim.keymap.set('n', '<leader>n', tree_api.tree.toggle, { desc = 'Toggle NvimTree' })
     end,
   },

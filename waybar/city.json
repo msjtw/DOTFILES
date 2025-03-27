@@ -1,4 +1,15 @@
-{
-  "cod": 401,
-  "message": "Invalid API key. Please see https://openweathermap.org/faq#error401 for more info."
-}
+[
+  {
+    "name": "Poznań",
+    "local_names": {
+      "ar": "بوزنان",
+      "de": "Posen",
+      "lv": "Poznaņa",
+      "pl": "Poznań"
+    },
+    "lat": 52.4006632,
+    "lon": 16.91973259178088,
+    "country": "PL",
+    "state": "Greater Poland Voivodeship"
+  }
+]
