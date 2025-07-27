@@ -1,5 +1,5 @@
 if [ -z "$WAYLAND_DISPLAY" ] && [ "$XDG_VTNR" -eq 1 ]
-    exec sway
+    exec niri --session
 end
 
 if status is-interactive

@@ -27,7 +27,7 @@ output * bg $HOME/Pictures/wp2.jpeg fill
 input * {
     tap "enabled"
 	xkb_layout "pl,eu"
-    xkb_options caps:escape_shifted_capslock
+    xkb_options caps:eescape_shifted_capslock
     accel_profile flat
     pointer_accel 0.6
 }
@@ -257,6 +257,7 @@ bindsym XF86AudioLowerVolume exec "pactl set-sink-volume @DEFAULT_SINK@ -5%"
 bindsym Shift+End exec "playerctl play-pause"
 bindsym Shift+Prior exec "playerctl next"
 bindsym Shift+Next exec "playerctl previous"
+
 
 bindsym $mod+Shift+a exec "nvim_launch.py"
 

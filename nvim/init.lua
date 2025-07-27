@@ -167,6 +167,7 @@ vim.opt.expandtab = true
 vim.opt.spelllang = { 'pl', 'en_gb' }
 vim.opt.spell = false
 
+
 -- toggle spell
 vim.keymap.set('n', '<leader>ts', function()
   vim.opt.spell = not (vim.opt.spell:get())
@@ -177,10 +178,25 @@ vim.keymap.set('n', '<leader>tt', function()
 end, { desc = '[T]oggle [T]oggleterm' })
 
 -- disable arrow keys in normal mode
-vim.keymap.set('n', '<Up>', '<Nop>')
-vim.keymap.set('n', '<Left>', '<Nop>')
-vim.keymap.set('n', '<Right>', '<Nop>')
-vim.keymap.set('n', '<Down>', '<Nop>')
+vim.keymap.set('n', '<Up>', '<C-w>k')
+vim.keymap.set('n', '<Left>', '<C-w>h')
+vim.keymap.set('n', '<Right>', '<C-w>l')
+vim.keymap.set('n', '<Down>', '<C-w>j')
+vim.keymap.set('n', '<C-k>', '<C-w>k')
+vim.keymap.set('n', '<C-h>', '<C-w>h')
+vim.keymap.set('n', '<C-l>', '<C-w>l')
+vim.keymap.set('n', '<C-j>', '<C-w>j')
+
+-- vim.keymap.set('n', '<leader><leader>', , { desc = '[S]earch existing [b]uffers' })
+
+vim.keymap.set('i', '<C-,>', function()
+  vim.ui.input({ prompt = ' Calculator: ' }, function(input)
+    local calc = load('return ' .. (input or ''))()
+    if calc then
+      vim.api.nvim_feedkeys(tostring(calc), 'i', true)
+    end
+  end)
+end)
 
 vim.opt.autoread = true
 -- Triger `autoread` when files changes on disk
@@ -523,7 +539,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>sb', builtin.buffers, { desc = '[S]earch existing [b]uffers' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -795,16 +811,16 @@ require('lazy').setup({
     },
     opts = {
       notify_on_error = false,
-      format_on_save = function(bufnr)
-        -- Disable "format_on_save lsp_fallback" for languages that don't
-        -- have a well standardized coding style. You can add additional
-        -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
-        return {
-          timeout_ms = 500,
-          lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
-        }
-      end,
+      -- format_on_save = function(bufnr)
+      --   -- Disable "format_on_save lsp_fallback" for languages that don't
+      --   -- have a well standardized coding style. You can add additional
+      --   -- languages here or re-enable it for the disabled ones.
+      --   local disable_filetypes = { c = true, cpp = true }
+      --   return {
+      --     timeout_ms = 500,
+      --     lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
+      --   }
+      -- end,
       formatters_by_ft = {
         lua = { 'stylua' },
         latex = { 'latexindent' },
@@ -1066,7 +1082,7 @@ require('lazy').setup({
     version = '*',
     config = function()
       require('toggleterm').setup {
-        -- config
+        
       }
     end,
   },
@@ -1108,7 +1124,7 @@ require('lazy').setup({
     end,
   },
   {
-    'tpope/vim-commentary',
+    'numToStr/Comment.nvim',
   },
   {
     'dart-lang/dart-vim-plugin',
@@ -1126,6 +1142,37 @@ require('lazy').setup({
     end,
   },
   {
+    'rcarriga/nvim-notify',
+    init = function()
+      vim.notify = require 'notify'
+    end,
+  },
+  -- {
+  --   'm4xshen/hardtime.nvim',
+  --   dependencies = { 'MunifTanjim/nui.nvim' },
+  --   opts = {
+  --     disable_mouse = false,
+  --   },
+  -- },
+  {
+    'ggandor/leap.nvim',
+    enabled = true,
+    keys = {
+      { 's', mode = { 'n', 'x', 'o' }, desc = 'Leap Forward to' },
+      { 'S', mode = { 'n', 'x', 'o' }, desc = 'Leap Backward to' },
+      { 'gs', mode = { 'n', 'x', 'o' }, desc = 'Leap from Windows' },
+    },
+    config = function(_, opts)
+      local leap = require 'leap'
+      for k, v in pairs(opts) do
+        leap.opts[k] = v
+      end
+      leap.add_default_mappings(true)
+      vim.keymap.del({ 'x', 'o' }, 'x')
+      vim.keymap.del({ 'x', 'o' }, 'X')
+    end,
+  },
+  {
     'MeanderingProgrammer/render-markdown.nvim',
     dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
@@ -1133,6 +1180,35 @@ require('lazy').setup({
     ---@module 'render-markdown'
     ---@type render.md.UserConfig
     opts = {},
+  },
+  {
+    "nvim-zh/colorful-winsep.nvim",
+    config = function ()
+      require("colorful-winsep").setup({
+  -- highlight for Window separator
+  hi = {
+    bg = "#16161E",
+    fg = "#1F3442",
+  },
+  -- This plugin will not be activated for filetype in the following table.
+  no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "NvimTree" },
+  -- Symbols for separator lines, the order: horizontal, vertical, top left, top right, bottom left, bottom right.
+  symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
+  -- #70: https://github.com/nvim-zh/colorful-winsep.nvim/discussions/70
+  only_line_seq = true,
+  -- Smooth moving switch
+  smooth = true,
+  exponential_smoothing = true,
+  anchor = {
+    left = { height = 1, x = -1, y = -1 },
+    right = { height = 1, x = -1, y = 0 },
+    up = { width = 0, x = -1, y = 0 },
+    bottom = { width = 0, x = 1, y = 0 },
+ },
+ light_pollution = function(lines) end,
+})
+    end,
+    event = { "WinLeave" },
   },
   -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins for Kickstart
   --
