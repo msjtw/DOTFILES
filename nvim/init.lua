@@ -84,6 +84,8 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
+vim.opt.diffopt:append("iwhiteall")
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -272,6 +274,26 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.highlight.on_yank()
   end,
 })
+
+-- Define highlight groups
+vim.cmd([[
+  highlight ActiveWindow guibg=#1e1e2e
+  highlight InactiveWindow guibg=#11111b
+]])
+
+-- Autocmd to toggle highlights
+vim.api.nvim_create_autocmd({"WinEnter", "BufEnter"}, {
+  callback = function()
+    vim.wo.winhighlight = "Normal:ActiveWindow,NormalNC:InactiveWindow"
+  end
+})
+
+vim.api.nvim_create_autocmd({"WinLeave", "BufLeave"}, {
+  callback = function()
+    vim.wo.winhighlight = "Normal:InactiveWindow,NormalNC:InactiveWindow"
+  end
+})
+
 
 -- LANGUAGE SPECIFIC KEYMAPS
 
@@ -944,22 +966,17 @@ require('lazy').setup({
     end,
   },
 
-  { -- You can easily change to a different colorscheme.
-    -- Change the name of the colorscheme plugin below, and then
-    -- change the command in the config to whatever the name of that colorscheme is.
-    --
-    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
-    init = function()
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
-
-      -- You can configure highlights by doing something like:
-      vim.cmd.hi 'Comment gui=none'
-    end,
+  {
+  "vague-theme/vague.nvim",
+    lazy = false, -- make sure we load this during startup if it is your main colorscheme
+    priority = 1000, -- make sure to load this before all the other plugins
+    config = function()
+      -- NOTE: you do not need to call setup if you don't want to.
+      require("vague").setup({
+        -- optional configuration here
+      })
+      vim.cmd("colorscheme vague")
+    end
   },
 
   -- Highlight todo, notes, etc in comments
@@ -1126,12 +1143,12 @@ require('lazy').setup({
   {
     'numToStr/Comment.nvim',
   },
-  {
-    'dart-lang/dart-vim-plugin',
-  },
-  {
-    'thosakwe/vim-flutter',
-  },
+  -- {
+  --   'dart-lang/dart-vim-plugin',
+  -- },
+  -- {
+  --   'thosakwe/vim-flutter',
+  -- },
   {
     'lervag/vimtex',
     lazy = false, -- we don't want to lazy load VimTeX
@@ -1173,6 +1190,15 @@ require('lazy').setup({
     end,
   },
   {
+    'pteroctopus/faster.nvim',
+    version = '*',
+    config = function()
+      require('faster').setup {
+        
+      }
+    end,
+  },
+  {
     'MeanderingProgrammer/render-markdown.nvim',
     dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' }, -- if you use the mini.nvim suite
     -- dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.icons' }, -- if you use standalone mini plugins
@@ -1180,35 +1206,6 @@ require('lazy').setup({
     ---@module 'render-markdown'
     ---@type render.md.UserConfig
     opts = {},
-  },
-  {
-    "nvim-zh/colorful-winsep.nvim",
-    config = function ()
-      require("colorful-winsep").setup({
-  -- highlight for Window separator
-  hi = {
-    bg = "#16161E",
-    fg = "#1F3442",
-  },
-  -- This plugin will not be activated for filetype in the following table.
-  no_exec_files = { "packer", "TelescopePrompt", "mason", "CompetiTest", "NvimTree" },
-  -- Symbols for separator lines, the order: horizontal, vertical, top left, top right, bottom left, bottom right.
-  symbols = { "━", "┃", "┏", "┓", "┗", "┛" },
-  -- #70: https://github.com/nvim-zh/colorful-winsep.nvim/discussions/70
-  only_line_seq = true,
-  -- Smooth moving switch
-  smooth = true,
-  exponential_smoothing = true,
-  anchor = {
-    left = { height = 1, x = -1, y = -1 },
-    right = { height = 1, x = -1, y = 0 },
-    up = { width = 0, x = -1, y = 0 },
-    bottom = { width = 0, x = 1, y = 0 },
- },
- light_pollution = function(lines) end,
-})
-    end,
-    event = { "WinLeave" },
   },
   -- NOTE: Next step on your Neovim journey: Add/Configure additional plugins for Kickstart
   --
