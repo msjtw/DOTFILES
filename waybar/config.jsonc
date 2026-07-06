@@ -126,7 +126,7 @@
 "custom/weather": {
     "format": "| {}",
     "interval": 300, // Remove this if your script is endless and write in loop
-    "exec": "python /home/msjtw/.config/waybar/weather.py 2> /dev/null", // Script in resources folder
+    "exec": "uv run /home/msjtw/.config/waybar/weather.py 2> /dev/null", // Script in resources folder
     "return-type" : "json"
 },
 "custom/shutdown":{
