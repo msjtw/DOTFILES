@@ -185,10 +185,9 @@ vim.keymap.set('n', '<Up>', '<C-w>k')
 vim.keymap.set('n', '<Left>', '<C-w>h')
 vim.keymap.set('n', '<Right>', '<C-w>l')
 vim.keymap.set('n', '<Down>', '<C-w>j')
-vim.keymap.set('n', '<C-k>', '<C-w>k')
-vim.keymap.set('n', '<C-h>', '<C-w>h')
-vim.keymap.set('n', '<C-l>', '<C-w>l')
-vim.keymap.set('n', '<C-j>', '<C-w>j')
+
+vim.keymap.set('n', '<C-k>', '<C-u>zz')
+vim.keymap.set('n', '<C-j>', '<C-d>zz')
 
 -- vim.keymap.set('n', '<leader><leader>', , { desc = '[S]earch existing [b]uffers' })
 
@@ -250,8 +249,8 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 --  See `:help wincmd` for a list of all window commands
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+-- vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
+-- vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 vim.keymap.set('n', 'gx', [[:execute '!open ' . shellescape(expand('<cfile>'), 1)<CR>]])
 
@@ -1328,6 +1327,8 @@ require('lazy').setup({
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
+
+      require('mini.animate').setup()
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
